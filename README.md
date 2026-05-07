@@ -125,7 +125,7 @@
 
 - 自定义快捷命令：`leijun` 关闭屏幕、`jinfan` 点亮屏幕
 
-## ⬆️ 内核更新教程
+## ⬆️ 内核更新教程（只做内核调试用，非必要无需更新）
 
 项目提供一键内核升级脚本，建议**root 权限**执行，快速更新设备定制内核：
 
@@ -151,27 +151,28 @@ sudo bash -c "$(curl -fsSL https://ghfast.top/https://raw.githubusercontent.com/
 
 2. 在电脑上安装 `adb`、`fastboot` 刷机工具，并配置环境变量
 
-3. 解压下载的 `.7z` 镜像压缩包，获取 `rootfs.img`、`u-boot.img` 等刷机文件
+3. 解压下载的 `.7z` 镜像压缩包，获取 `rootfs.img`、`xiaomi-k20pro-boot.img` 下载[u-boot.img](https://github.com/GengWei1997/linux-xiaomi-raphael-uboot/releases/tag/v1.0.0)（选择最近日期版本）
 
 ### 刷机命令
 
 ```Plain Text
-# 1. 设备进入 Fastboot 模式
+# 1. 进入 Fastboot 模式
 adb reboot bootloader
 
-# 2. 清空设备分区（清除旧数据，避免冲突）
+# 2. 擦除分区
 fastboot erase dtbo
 fastboot erase boot
 fastboot erase cache
 fastboot erase userdata
 
-# 3. 刷入底层引导镜像
+# 3. 刷入 boot 镜像
+fastboot flash cache xiaomi-k20pro-boot.img
 fastboot flash boot u-boot.img
 
-# 4. 刷入系统主镜像
+# 4. 刷入系统镜像（需要先解压 rootfs.7z）
 fastboot flash userdata rootfs.img
 
-# 5. 重启设备，完成刷机
+# 5. 重启设备
 fastboot reboot
 ```
 
