@@ -1,6 +1,6 @@
 # 小米 Raphael 设备 Linux 系统镜像构建项目
 
-本项目为小米 Raphael（Redmi K20 Pro）专属 Linux 镜像构建项目，提供完整的 Debian / Ubuntu 系统镜像构建脚本与 GitHub Actions 自动化工作流，支持多内核、多桌面、服务器极简版本，开箱即用，适配性完善。
+本项目为小米 Raphael（Redmi K20 Pro）专属 Linux 镜像构建项目，提供完整的 Debian / Ubuntu 系统镜像构建脚本与 GitHub Actions 自动化工作流，支持多内核、多桌面、服务器版，开箱即用，适配性完善。
 
 ## 📌 项目概述
 
@@ -12,7 +12,7 @@
 
 - **Ubuntu 系列**：GNOME 桌面版、Phosh 移动桌面版、Server 无图形服务器版
 
-- **定制内核**：自主编译适配设备的 6.18 / 7.0 版本 Linux 内核
+- **定制内核**：编译适配设备 Linux 内核
 
 ## ✅ 设备适配状态
 
@@ -43,7 +43,7 @@
 
 - **Ubuntu 版本**：resolute（默认最新）
 
-- **内核版本**：6.18、7.0（双版本可选，均为定制适配版）
+- **内核版本**：6.18、7.0（双版本可选）
 
 ### Phosh 桌面变体
 
@@ -55,7 +55,7 @@
 
 ## 🚀 快速上手
 
-### 方式一：下载预构建镜像（推荐）
+### 方式一：下载预构建镜像
 
 项目持续自动构建最新镜像，可直接前往 [Releases](https://github.com/GengWei1997/linux-xiaomi-raphael-uboot/releases) 页面下载，无需本地编译。
 
@@ -63,7 +63,7 @@
 > 
 > 
 
-### 方式二：GitHub Actions 自定义构建
+### 方式二：GitHub Actions 自定义构建（推荐）
 
 1. Fork 本仓库至个人 GitHub 账号
 
@@ -90,7 +90,7 @@
 
 ### 全版本通用
 
-- 默认配置**清华软件源**，国内下载速度更快
+- 默认配置**清华软件源**
 
 - 预装简体中文语言包、中国标准时区，开箱汉化
 
@@ -98,9 +98,7 @@
 
 - 内置 SSH 服务，支持 root / 普通用户远程登录
 
-- 集成全套设备适配驱动与固件，硬件兼容完善
-
-- 内置**一键内核更新脚本**，可在线升级定制内核
+- 支持**一键内核更新脚本**，可在线升级定制内核
 
 - 默认账号密码：
        
@@ -178,6 +176,8 @@ fastboot reboot
 
 ## ❓ 常见问题 FAQ
 
+- 什么破玩意儿，开机就卡死了？？？（请拔掉sim卡）
+
 - **Windows 无法连接设备 CDC NCM 驱动**：参考解决方案视频[BV1tW4y1A79V](https://www.bilibili.com/video/BV1tW4y1A79V/)
 
 - **Server 版如何联网**：
@@ -199,8 +199,8 @@ fastboot reboot
 
 - [@map220v](https://github.com/map220v/ubuntu-xiaomi-nabu)：上游项目参考
 
-- [@Pc1598](https://github.com/Pc1598)：sm8150 设备内核维护
+- [@Pc1598](https://github.com/Pc1598)：sm8150-mainline-raphael 设备内核维护
 
-- [Aospa\-raphael\-unofficial/linux](https://github.com/Aospa-raphael-unofficial/linux)、[sm8150\-mainline/linux](https://gitlab.com/sm8150-mainline/linux)：内核源码支持
+- [Aospa\-raphael\-unofficial/linux](https://github.com/Aospa-raphael-unofficial/linux)、[sm8150\-mainline/linux](https://gitlab.postmarketos.org/soc/qualcomm-sm8150/linux)：内核源码支持
 
 - 所有开源贡献者与项目使用者
