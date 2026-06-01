@@ -59,7 +59,8 @@ else
     DESKTOP_PACKAGES=""
 fi
 
-ALL_PACKAGES="$BASE_PACKAGES $DEVICE_PACKAGES $DESKTOP_PACKAGES"
+#ALL_PACKAGES="$BASE_PACKAGES $DEVICE_PACKAGES $DESKTOP_PACKAGES"
+ALL_PACKAGES="$BASE_PACKAGES $DESKTOP_PACKAGES"
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ 基础包: $(echo "$BASE_PACKAGES" | tr ' ' ', ')"
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ 设备包: $(echo "$DEVICE_PACKAGES" | tr ' ' ', ')"
@@ -69,7 +70,12 @@ fi
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ 开始安装（这可能需要几分钟...）"
 chroot rootdir apt-get install -y $ALL_PACKAGES
-
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ add rmtfs"
+chroot rootdir dpkg -i debs/rmtfs_1.1.1-2_arm64.deb
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ add protection"
+chroot rootdir dpkg -i debs/protection-domain-mapper_1.0-4ubuntu4_arm64.deb
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ add tqftpserv"
+chroot rootdir dpkg -i debs/tqftpserv_1.2-1_arm64.deb
 if [[ "$SYSTEM_TYPE" == *"debian-"* ]]; then
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ 修复 Debian dpkg 错误"
     chroot rootdir dpkg --remove --force-remove-reinstreq shim-signed 2>/dev/null || true
