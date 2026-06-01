@@ -70,6 +70,7 @@ fi
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ 开始安装（这可能需要几分钟...）"
 chroot rootdir apt-get install -y $ALL_PACKAGES
+cp -r debs rootdir/
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ add rmtfs"
 chroot rootdir dpkg -i debs/rmtfs_1.1.1-2_arm64.deb
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ add protection"
