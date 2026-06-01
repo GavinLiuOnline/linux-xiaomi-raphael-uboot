@@ -72,7 +72,7 @@ permissions:
 
 jobs:
   generate-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04-arm
     outputs:
       matrix: ${{ steps.generate.outputs.matrix }}
       build_mode: ${{ steps.generate.outputs.build_mode }}
