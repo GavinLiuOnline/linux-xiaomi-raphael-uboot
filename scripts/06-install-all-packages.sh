@@ -27,7 +27,7 @@ elif [[ "$SYSTEM_TYPE" == *"ubuntu-"* ]]; then
     if [[ "$SYSTEM_TYPE" == *"server"* ]]; then
         BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager initramfs-tools chrony curl wget locales tzdata dnsmasq iptables iproute2 zram-tools"
     else
-        BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager systemd-boot initramfs-tools chrony curl wget locales tzdata dnsmasq iptables iproute2 zram-tools"
+        BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager grub-efi-arm64-signed initramfs-tools chrony curl wget locales tzdata dnsmasq iptables iproute2 zram-tools"
     fi
 fi
 
