@@ -31,7 +31,7 @@ elif [[ "$SYSTEM_TYPE" == *"ubuntu-"* ]]; then
     fi
 fi
 
-DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils thermald power-profiles-daemon iio-utils gpsd gpsd-clients pd-mapper modemmanager libqmi-utils libmbim-utils"
+DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils power-profiles-daemon gpsd gpsd-clients modemmanager libqmi-utils libmbim-utils"
 
 if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
     case "$DESKTOP_ENV" in
