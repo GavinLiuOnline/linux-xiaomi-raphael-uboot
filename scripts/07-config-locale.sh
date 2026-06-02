@@ -33,11 +33,11 @@ if [[ "$SYSTEM_TYPE" == *"ubuntu-"* ]]; then
         BASE_ZH_PACKAGES="fonts-arphic-uming language-pack-gnome-zh-hans-base language-pack-zh-hans-base language-pack-zh-hans language-pack-gnome-zh-hans fonts-arphic-ukai fonts-noto-cjk fonts-noto-cjk-extra gnome-user-docs-zh-hans language-pack-gnome-zh-hant-base language-pack-zh-hant-base language-pack-zh-hant language-pack-gnome-zh-hant libreoffice-help-common libreoffice-l10n-zh-cn libreoffice-help-zh-cn thunderbird-locale-zh-cn thunderbird-locale-zh-hans"
         
         # 桌面版本特有的中文输入法包
-        DESKTOP_ZH_PACKAGES="libopencc-data libmarisa0 libopencc1.1 libpinyin-data libpinyin15 ibus-libpinyin ibus-table ibus-table-wubi libchewing3-data libchewing3 ibus-chewing ibus-table-cangjie3 ibus-table-cangjie5 ibus-table-quick-classic"
+        DESKTOP_ZH_PACKAGES="libopencc-data libmarisa0 libopencc1.1 libpinyin-data ibus-libpinyin ibus-table ibus-table-wubi libchewing3-data libchewing3 ibus-chewing ibus-table-cangjie3 ibus-table-cangjie5 ibus-table-quick-classic"
         
         # resolute版本不支持libmarisa0包
         if [[ "$UBUNTU_VERSION" == "resolute" ]]; then
-            DESKTOP_ZH_PACKAGES="libopencc-data libopencc1.1 libpinyin-data libpinyin15 ibus-libpinyin ibus-table ibus-table-wubi libchewing3-data libchewing3 ibus-chewing ibus-table-cangjie3 ibus-table-cangjie5 ibus-table-quick-classic"
+            DESKTOP_ZH_PACKAGES="libopencc-data libopencc1.1 libpinyin-data ibus-libpinyin ibus-table ibus-table-wubi libchewing3-data libchewing3 ibus-chewing ibus-table-cangjie3 ibus-table-cangjie5 ibus-table-quick-classic"
         fi
         
         chroot rootdir apt-get install -y $BASE_ZH_PACKAGES $DESKTOP_ZH_PACKAGES

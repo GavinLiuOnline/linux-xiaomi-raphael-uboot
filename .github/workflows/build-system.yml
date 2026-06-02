@@ -14,12 +14,12 @@ on:
       system_types:
         description: '系统类型 (用逗号分隔多个值，如: debian-server,debian-gnome)'
         required: false
-        default: 'debian-server,debian-gnome,debian-phosh,ubuntu-server,ubuntu-gnome,ubuntu-phosh'
+        default: 'ubuntu-server,ubuntu-gnome,ubuntu-phosh'
         type: string
       kernel_versions:
         description: '内核版本 (默认7.0可选6.18)'
         required: false
-        default: '7.0'
+        default: '6.18'
         type: string
       bootstrap_tools:
         description: '构建工具 (用逗号分隔多个值，如: mmdebstrap)'
@@ -37,9 +37,9 @@ on:
         default: 'trixie'
         type: string
       ubuntu_versions:
-        description: 'Ubuntu 版本 (用逗号分隔多个值，如: noble,resolute)'
+        description: 'Ubuntu 版本 (用逗号分隔多个值，如: jammy,noble,resolute)'
         required: false
-        default: 'resolute'
+        default: 'jammy'
         type: string
       kernel_repository:
         description: '内核包仓库'
