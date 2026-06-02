@@ -20,12 +20,12 @@ fi
 # 配置开机 15 秒后自动熄屏的 Systemd 服务
 cat > rootdir/etc/systemd/system/blank_screen.service << 'EOF'
 [Unit]
-Description=Auto-blank screen after 15s
+Description=Auto-blank screen after 30s
 After=multi-user.target
 
 [Service]
 Type=simple
-ExecStartPre=/bin/bash -c "/usr/bin/sleep 15"
+ExecStartPre=/bin/bash -c "/usr/bin/sleep 30"
 ExecStart=sh -c 'TERM=linux setterm --blank force </dev/tty1'
 User=root
 Restart=on-failure
