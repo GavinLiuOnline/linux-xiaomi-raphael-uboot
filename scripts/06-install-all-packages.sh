@@ -31,7 +31,7 @@ elif [[ "$SYSTEM_TYPE" == *"ubuntu-"* ]]; then
     fi
 fi
 
-DEVICE_PACKAGES="linux-firmware wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils iio-sensor-proxy"
+DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils thermald power-profiles-daemon iio-utils gpsd gpsd-clients pd-mapper modemmanager libqmi-utils libmbim-utils"
 
 if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
     case "$DESKTOP_ENV" in
@@ -77,7 +77,17 @@ if [[ "$SYSTEM_TYPE" == *"debian-"* ]]; then
     chroot rootdir apt-get -f install -y 2>/dev/null || true
 fi
 
-chroot rootdir systemctl enable iio-sensor-proxy
+chroot rootdir apt-get install -y git meson ninja-build libglib2.0-dev libsystemd-dev
+
+# 编译 qrtr
+chroot rootdir git clone https://github.com/andersson/qrtr.git /tmp/qrtr
+chroot rootdir bash -c "cd /tmp/qrtr && meson build && ninja -C build && ninja -C build install"
+
+# 清理源码
+chroot rootdir rm -rf /tmp/qrtr 
+
+systemctl enable qrtr-ns
+
 if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
         chroot rootdir gsettings set org.gnome.mutter auto-rotate-screen true
 fi
