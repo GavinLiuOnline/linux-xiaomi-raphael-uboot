@@ -31,7 +31,7 @@ elif [[ "$SYSTEM_TYPE" == *"ubuntu-"* ]]; then
     fi
 fi
 
-DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils"
+DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils iio-sensor-proxy"
 
 if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
     case "$DESKTOP_ENV" in
@@ -75,6 +75,11 @@ if [[ "$SYSTEM_TYPE" == *"debian-"* ]]; then
     chroot rootdir dpkg --purge shim-signed 2>/dev/null || true
     chroot rootdir dpkg --configure -a 2>/dev/null || true
     chroot rootdir apt-get -f install -y 2>/dev/null || true
+fi
+
+chroot rootdir systemctl enable iio-sensor-proxy
+if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
+        chroot rootdir gsettings set org.gnome.mutter auto-rotate-screen true
 fi
 
 # 修改服务配置
