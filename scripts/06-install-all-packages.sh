@@ -31,7 +31,7 @@ elif [[ "$SYSTEM_TYPE" == *"ubuntu-"* ]]; then
     fi
 fi
 
-DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils iio-sensor-proxy"
+DEVICE_PACKAGES="linux-firmware wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils iio-sensor-proxy"
 
 if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
     case "$DESKTOP_ENV" in
