@@ -37,13 +37,13 @@ system_config() {
       ;;
     "ubuntu-gnome")
       echo "UBUNTU_VERSION=${UBUNTU_VERSION:-resolute}"
-      echo "IMAGE_SIZE=6G"
+      echo "IMAGE_SIZE=8G"
       echo "IS_DESKTOP=true"
       echo "DESKTOP_ENV=gnome"
       ;;
     "ubuntu-phosh")
       echo "UBUNTU_VERSION=${UBUNTU_VERSION:-resolute}"
-      echo "IMAGE_SIZE=6G"
+      echo "IMAGE_SIZE=8G"
       echo "IS_DESKTOP=true"
       echo "DESKTOP_ENV=$2"
       ;;
