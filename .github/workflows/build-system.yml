@@ -44,7 +44,7 @@ on:
       kernel_repository:
         description: '内核包仓库'
         required: false
-        default: 'GengWei1997/kernel-deb'
+        default: 'GavinLiuOnline/kernel-deb'
         type: string
   push:
     branches:
