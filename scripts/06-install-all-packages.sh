@@ -132,7 +132,7 @@ install_qcom_local_debs() {
 
 	# qrtr-ns 在 lib/systemd/system；rmtfs/pd-mapper 在 usr/lib/systemd/system
 	chroot rootdir systemctl enable qrtr-ns.service
-	chroot rootdir systemctl enable rmtfs.service protection-domain-mapper.service tqftpserv.service
+	chroot rootdir systemctl enable rmtfs.service pd-mapper.service tqftpserv.service
 	# 避免与 rmtfs 主服务竞态（与 Debian 打包策略一致）
 	chroot rootdir systemctl disable rmtfs-dir.service 2>/dev/null || true
 	chroot rootdir systemctl mask rmtfs-dir.service 2>/dev/null || true
