@@ -33,7 +33,7 @@ elif [[ "$SYSTEM_TYPE" == *"ubuntu-"* ]]; then
 fi
 
 # 通用外设 + Qualcomm 运行时依赖（Jammy 源中可安装的）
-DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils power-profiles-daemon gpsd gpsd-clients modemmanager libqmi-utils libmbim-utils linux-firmware liblzma5"
+DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils power-profiles-daemon gpsd gpsd-clients modemmanager libqmi-utils libmbim-utils liblzma5"
 
 
 if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
