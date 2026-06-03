@@ -3,6 +3,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG_DIR="$SCRIPT_DIR/../config"
+DEB_OUT_DIR="${DEB_OUT_DIR:-$SCRIPT_DIR/debs}"
 
 . "$CONFIG_DIR/build-config.sh"
 
@@ -19,19 +20,21 @@ echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ 更新系统包..."
 chroot rootdir apt-get update
 chroot rootdir apt-get upgrade -y
 
-BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano gpgv gnupg gpgv2 grub2-common ca-certificates kmod debconf wireless-regdb less procps psmisc iputils-ping  systemd udev dbus net-tools rfkill wireless-tools network-manager initramfs-tools chrony curl wget locales tzdata iproute2 zram-tools"
+BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano gpgv gnupg gpgv2 grub2-common ca-certificates kmod debconf wireless-regdb less procps psmisc iputils-ping systemd udev dbus net-tools rfkill wireless-tools network-manager initramfs-tools chrony curl wget locales tzdata iproute2 zram-tools"
 
 if [[ "$SYSTEM_TYPE" == *"debian-"* ]]; then 
-    BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager systemd-boot initramfs-tools chrony curl wget locales tzdata fonts-wqy-microhei dnsmasq iptables iproute2 zram-tools"
+   BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager systemd-boot initramfs-tools chrony curl wget locales tzdata fonts-wqy-microhei dnsmasq iptables iproute2 zram-tools udev dbus kmod ca-certificates wireless-regdb"
 elif [[ "$SYSTEM_TYPE" == *"ubuntu-"* ]]; then
-    if [[ "$SYSTEM_TYPE" == *"server"* ]]; then
-        BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager initramfs-tools chrony curl wget locales tzdata dnsmasq iptables iproute2 zram-tools"
-    else
-        BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager grub-efi-arm64-signed initramfs-tools chrony curl wget locales tzdata dnsmasq iptables iproute2 zram-tools"
-    fi
+	if [[ "$SYSTEM_TYPE" == *"server"* ]]; then
+		BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager initramfs-tools chrony curl wget locales tzdata dnsmasq iptables iproute2 zram-tools udev dbus kmod ca-certificates wireless-regdb"
+	else
+		BASE_PACKAGES="bash-completion sudo apt-utils ssh openssh-server nano network-manager grub-efi-arm64-signed initramfs-tools chrony curl wget locales tzdata dnsmasq iptables iproute2 zram-tools udev dbus kmod ca-certificates wireless-regdb"
+	fi
 fi
 
-DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils power-profiles-daemon gpsd gpsd-clients modemmanager libqmi-utils libmbim-utils"
+# 通用外设 + Qualcomm 运行时依赖（Jammy 源中可安装的）
+DEVICE_PACKAGES="wpasupplicant iw iproute2 alsa-ucm-conf alsa-utils power-profiles-daemon gpsd gpsd-clients modemmanager libqmi-utils libmbim-utils linux-firmware liblzma5"
+
 
 if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
     case "$DESKTOP_ENV" in
@@ -77,16 +80,65 @@ if [[ "$SYSTEM_TYPE" == *"debian-"* ]]; then
     chroot rootdir apt-get -f install -y 2>/dev/null || true
 fi
 
-chroot rootdir apt-get install -y git meson ninja-build libglib2.0-dev libsystemd-dev
+install_qcom_local_debs() {
+	local deb_dir="$1"
+	local required=(
+		libqrtr1_*_arm64.deb
+		qrtr-tools_*_arm64.deb
+		rmtfs_*_arm64.deb
+		protection-domain-mapper_*_arm64.deb
+		tqftpserv_*_arm64.deb
+		audioreach-topology_*_all.deb
+	)
 
-# 编译 qrtr
-chroot rootdir git clone https://github.com/andersson/qrtr.git /tmp/qrtr
-chroot rootdir bash -c "cd /tmp/qrtr && meson build && ninja -C build && ninja -C build install"
+	if [ ! -d "$deb_dir" ]; then
+		echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06] ❌ deb 目录不存在: $deb_dir" >&2
+		echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]    请先运行: $SCRIPT_DIR/docker-build.sh" >&2
+		exit 1
+	fi
 
-# 清理源码
-chroot rootdir rm -rf /tmp/qrtr 
+	local missing=0
+	for pattern in "${required[@]}"; do
+		if ! compgen -G "$deb_dir/$pattern" >/dev/null; then
+			echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06] ❌ 缺少: $deb_dir/$pattern" >&2
+			missing=1
+		fi
+	done
+	if [ "$missing" -ne 0 ]; then
+		exit 1
+	fi
 
-systemctl enable qrtr-ns
+	echo "[$(date +'%Y-%m-%d %H:%M:%S')] [06]   └─ 安装本地 Qualcomm deb: $deb_dir"
+	mkdir -p rootdir/tmp/qcom-debs
+	# 按依赖顺序：libqrtr1 -> tools/rmtfs/pd-mapper/tqftpserv -> topology
+	cp "$deb_dir"/libqrtr1_*_arm64.deb rootdir/tmp/qcom-debs/
+	cp "$deb_dir"/qrtr-tools_*_arm64.deb \
+		"$deb_dir"/rmtfs_*_arm64.deb \
+		"$deb_dir"/protection-domain-mapper_*_arm64.deb \
+		"$deb_dir"/tqftpserv_*_arm64.deb \
+		"$deb_dir"/audioreach-topology_*_all.deb \
+		rootdir/tmp/qcom-debs/
+
+	chroot rootdir dpkg -i /tmp/qcom-debs/libqrtr1_*_arm64.deb
+	chroot rootdir dpkg -i /tmp/qcom-debs/qrtr-tools_*_arm64.deb \
+		/tmp/qcom-debs/rmtfs_*_arm64.deb \
+		/tmp/qcom-debs/protection-domain-mapper_*_arm64.deb \
+		/tmp/qcom-debs/tqftpserv_*_arm64.deb \
+		/tmp/qcom-debs/audioreach-topology_*_all.deb
+	chroot rootdir apt-get install -f -y
+	rm -rf rootdir/tmp/qcom-debs
+
+	mkdir -p rootdir/var/lib/rmtfs
+
+	# qrtr-ns 在 lib/systemd/system；rmtfs/pd-mapper 在 usr/lib/systemd/system
+	chroot rootdir systemctl enable qrtr-ns.service
+	chroot rootdir systemctl enable rmtfs.service protection-domain-mapper.service tqftpserv.service
+	# 避免与 rmtfs 主服务竞态（与 Debian 打包策略一致）
+	chroot rootdir systemctl disable rmtfs-dir.service 2>/dev/null || true
+	chroot rootdir systemctl mask rmtfs-dir.service 2>/dev/null || true
+}
+
+install_qcom_local_debs "$DEB_OUT_DIR"
 
 if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
         chroot rootdir gsettings set org.gnome.mutter auto-rotate-screen true
