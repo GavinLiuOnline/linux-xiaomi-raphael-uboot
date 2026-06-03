@@ -154,7 +154,7 @@ if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
 AutomaticLoginEnable=true
 AutomaticLogin=user
 EOF
-        chroot rootdir gsettings set org.gnome.mutter auto-rotate-screen true || true
+        #chroot rootdir gsettings set org.gnome.mutter auto-rotate-screen true || true
     fi
 fi
 
