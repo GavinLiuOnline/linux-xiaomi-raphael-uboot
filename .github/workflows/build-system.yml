@@ -361,6 +361,7 @@ jobs:
           echo "name=${RELEASE_TITLE}" >> $GITHUB_OUTPUT
           echo "timestamp=${TIMESTAMP}" >> $GITHUB_OUTPUT
 
+      # ==================== 修改开始：classify 步骤（支持大文件拆分） ====================
       - name: 生成 Release 描述和分类文件
         id: classify
         run: |
@@ -368,15 +369,16 @@ jobs:
           ARTIFACTS_DIR="artifacts"
           RELEASE_DIR="release-files"
           
-          # 创建统一发布目录
           mkdir -p "${RELEASE_DIR}"
-          
-          # 初始化数组
-          LARGE_FILES=""
-          FILE_LIST=""
           
           # GitHub Release 单个文件大小限制：2GB = 2147483648 字节
           SIZE_LIMIT=2147483648
+          # 拆分大小：1.9GB (留有余地，确保每个分卷 < 2GB)
+          SPLIT_SIZE=1900M
+          
+          FILE_LIST=""
+          SHA256_LIST=""
+          MERGE_INSTRUCTIONS=""
           
           # 遍历所有产物
           for artifact_dir in ${ARTIFACTS_DIR}/rootfs-*/; do
@@ -389,51 +391,55 @@ jobs:
               filesize=$(stat -c%s "$file")
               
               # 解析文件名信息
-              # 格式: rootfs-{system_type}-{kernel_version}-{os_version}[-{desktop_env}].7z
               IFS='-' read -ra PARTS <<< "${filename%.7z}"
               SYSTEM_TYPE="${PARTS[1]}"
               KERNEL_VER="${PARTS[2]}"
               OS_VER="${PARTS[3]}"
               
-              # 获取校验和
-              shafile="${file%.7z}.sha256"
-              if [ -f "$shafile" ]; then
-                SHA256=$(awk 'NR==1 {print $1}' "$shafile")
-              else
-                SHA256=$(sha256sum "$file" | awk '{print $1}')
-              fi
+              # 计算 SHA256
+              SHA256=$(sha256sum "$file" | awk '{print $1}')
               
-              # 构建文件信息行
-              FILE_INFO="| ${filename} | ${SYSTEM_TYPE} | ${KERNEL_VER} | ${OS_VER} |"
-              
-              if [ "$filesize" -gt "$SIZE_LIMIT" ]; then
-                # 大文件：不加入 Release，保留在 Artifacts
-                LARGE_FILES="${LARGE_FILES}
-          - ${filename} (${filesize} bytes)"
+              if [ "$filesize" -le "$SIZE_LIMIT" ]; then
+                # 小文件：直接复制到 Release 目录
+                cp "$file" "${RELEASE_DIR}/${filename}"
                 FILE_LIST="${FILE_LIST}
-          - ⚠️ **${filename}** (文件过大，请从 Artifacts 下载)"
-              else
-                # 小文件：加入 Release，创建符号链接到统一目录
-                ln -sf "$(realpath "$file")" "${RELEASE_DIR}/${filename}"
-                FILE_LIST="${FILE_LIST}
-          - ✅ **${filename}**"
-              fi
-              
-              # 收集校验和信息
-              SHA256_LIST="${SHA256_LIST}
+          - ✅ **${filename}** (${filesize} bytes)"
+                SHA256_LIST="${SHA256_LIST}
           ${filename}: ${SHA256}"
+              else
+                # 大文件：拆分为分卷
+                echo "拆分大文件: ${filename} (${filesize} bytes)"
+                
+                # 使用数字后缀 (part00, part01, ...) 生成分卷，直接放在 RELEASE_DIR 中
+                split -b $SPLIT_SIZE -d "$file" "${RELEASE_DIR}/${filename}.part"
+                
+                # 获取分卷文件列表（已直接生成在 RELEASE_DIR 中）
+                parts=($(ls ${RELEASE_DIR}/${filename}.part* | sort))
+                part_count=${#parts[@]}
+                
+                # 记录文件列表信息
+                FILE_LIST="${FILE_LIST}
+          - 🔸 **${filename}** (已拆分为 ${part_count} 个分卷，每个约 ${SPLIT_SIZE})"
+                
+                # 生成合并命令（使用通配符，简洁可靠）
+                MERGE_INSTRUCTIONS="${MERGE_INSTRUCTIONS}
+          **${filename}** (原始大小: ${filesize} bytes, SHA256: ${SHA256})
+          \`\`\`bash
+          cat ${filename}.part* > ${filename}
+          sha256sum ${filename}  # 应输出 ${SHA256}
+          \`\`\`
+          "
+                # 记录原始 SHA256 供校验
+                SHA256_LIST="${SHA256_LIST}
+          ${filename}: ${SHA256} (请合并分卷后校验)"
+              fi
             done
           done
           
-          # 列出要上传的文件
           echo "要上传到 Release 的文件:"
           ls -la ${RELEASE_DIR}/
           
-          {
-            echo "large_files<<EOF"
-            echo "$LARGE_FILES"
-            echo "EOF"
-          } >> $GITHUB_OUTPUT
+          # 输出给后续步骤
           {
             echo "file_list<<EOF"
             echo "$FILE_LIST"
@@ -444,14 +450,21 @@ jobs:
             echo "$SHA256_LIST"
             echo "EOF"
           } >> $GITHUB_OUTPUT
+          {
+            echo "merge_instructions<<EOF"
+            echo "$MERGE_INSTRUCTIONS"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+      # ==================== 修改结束 ====================
 
+      # ==================== 修改开始：description 步骤（加入合并说明） ====================
       - name: 创建 Release 描述
         id: description
         run: |
           TIMESTAMP="${{ steps.release-info.outputs.timestamp }}"
           FILE_LIST="${{ steps.classify.outputs.file_list }}"
-          LARGE_FILES="${{ steps.classify.outputs.large_files }}"
           SHA256_LIST="${{ steps.classify.outputs.sha256_list }}"
+          MERGE_INSTRUCTIONS="${{ steps.classify.outputs.merge_instructions }}"
           
           {
             echo "body<<EOF"
@@ -464,17 +477,17 @@ jobs:
             echo "|--------|----------|----------|----------|"
             echo "$FILE_LIST"
             echo ""
+            if [ -n "$MERGE_INSTRUCTIONS" ]; then
+              echo "### 🔗 大文件合并说明"
+              echo "以下文件因超过 GitHub Release 单文件 2GB 限制，已自动拆分为多个分卷。请下载所有分卷后执行合并命令："
+              echo "$MERGE_INSTRUCTIONS"
+              echo ""
+            fi
             echo "### 🔒 SHA256 校验和"
             echo "\`\`\`"
             echo "$SHA256_LIST"
             echo "\`\`\`"
             echo ""
-            if [ -n "$LARGE_FILES" ]; then
-              echo "### ⚠️ 大文件提示"
-              echo "以下文件超过 2GB，未上传到 Release，请从 Artifacts 下载："
-              echo "$LARGE_FILES"
-              echo ""
-            fi
             echo "### 🔑 默认凭据"
             echo "- **用户**: \`user\` / **密码**: \`1234\`"
             echo "- **用户**: \`root\` / **密码**: \`1234\`"
@@ -487,7 +500,9 @@ jobs:
             echo "*Built with ❤️ by GitHub Actions*"
             echo "EOF"
           } >> $GITHUB_OUTPUT
+      # ==================== 修改结束 ====================
 
+      # ==================== 修改开始：release 步骤（files 改为上传所有文件） ====================
       - name: 发布 Release
         uses: softprops/action-gh-release@v2
         with:
@@ -496,6 +511,7 @@ jobs:
           body: ${{ steps.description.outputs.body }}
           draft: false
           prerelease: false
-          files: release-files/*.7z
+          files: release-files/*        # 修改：上传所有文件（包括 .7z 和 .part*）
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # ==================== 修改结束 ====================
