@@ -3,7 +3,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONFIG_DIR="$SCRIPT_DIR/../config"
-DEB_OUT_DIR="${DEB_OUT_DIR:-$SCRIPT_DIR/debs}"
+DEB_OUT_DIR="${DEB_OUT_DIR:-$SCRIPT_DIR/../debs}"
 
 . "$CONFIG_DIR/build-config.sh"
 
