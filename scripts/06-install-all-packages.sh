@@ -140,9 +140,6 @@ install_qcom_local_debs() {
 
 install_qcom_local_debs "$DEB_OUT_DIR"
 
-if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
-        chroot rootdir gsettings set org.gnome.mutter auto-rotate-screen true
-fi
 
 # 修改服务配置
 if [[ "$SYSTEM_TYPE" == *"debian-"* ]]; then
@@ -157,6 +154,7 @@ if [[ "$SYSTEM_TYPE" != *"server"* ]]; then
 AutomaticLoginEnable=true
 AutomaticLogin=user
 EOF
+        chroot rootdir gsettings set org.gnome.mutter auto-rotate-screen true || true
     fi
 fi
 
