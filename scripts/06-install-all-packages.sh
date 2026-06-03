@@ -119,12 +119,12 @@ install_qcom_local_debs() {
 		"$deb_dir"/audioreach-topology_*_all.deb \
 		rootdir/tmp/qcom-debs/
 
-	chroot rootdir dpkg -i /tmp/qcom-debs/libqrtr1_*_arm64.deb
-	chroot rootdir dpkg -i /tmp/qcom-debs/qrtr-tools_*_arm64.deb \
+	chroot rootdir sh -c "dpkg -i /tmp/qcom-debs/libqrtr1_*_arm64.deb"
+	chroot rootdir sh -c "dpkg -i /tmp/qcom-debs/qrtr-tools_*_arm64.deb \
 		/tmp/qcom-debs/rmtfs_*_arm64.deb \
 		/tmp/qcom-debs/protection-domain-mapper_*_arm64.deb \
 		/tmp/qcom-debs/tqftpserv_*_arm64.deb \
-		/tmp/qcom-debs/audioreach-topology_*_all.deb
+		/tmp/qcom-debs/audioreach-topology_*_all.deb"
 	chroot rootdir apt-get install -f -y
 	rm -rf rootdir/tmp/qcom-debs
 
