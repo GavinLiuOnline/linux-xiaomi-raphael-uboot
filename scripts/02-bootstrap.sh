@@ -6,8 +6,10 @@ UBUNTU_VERSION="${UBUNTU_VERSION:-resolute}"
 BOOT_IMG="${BOOT_IMG:-xiaomi-k20pro-boot.img}"
 SYSTEM_TYPE="${SYSTEM_TYPE:-ubuntu-server}"
 BOOTSTRAP_TOOL="${BOOTSTRAP_TOOL:-mmdebstrap}"
+ARCH="${ARCH:-arm64}"
 
-echo "[$(date +'%Y-%m-%d %H:%M:%S')] [02] 🚀 安装基础系统"
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] [02] 🚀 安装基础系统 (目标架构: $ARCH)"
+echo "[$(date +'%Y-%m-%d %H:%M:%S')] [02]   └─ 主机架构: $(uname -m)"
 
 if [[ "$SYSTEM_TYPE" == *"debian-"* ]]; then
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] [02]   └─ 使用 $BOOTSTRAP_TOOL 构建 Debian $DEBIAN_VERSION 🐧"
@@ -21,9 +23,9 @@ fi
 
 echo "[$(date +'%Y-%m-%d %H:%M:%S')] [02]   └─ 开始 bootstrap (这可能需要几分钟...)"
 if [ "$BOOTSTRAP_TOOL" = "mmdebstrap" ]; then
-    mmdebstrap $OS_VERSION rootdir
+    mmdebstrap --arch=$ARCH $OS_VERSION rootdir
 elif [ "$BOOTSTRAP_TOOL" = "debootstrap" ]; then
-    debootstrap $OS_VERSION rootdir $MIRROR
+    debootstrap --arch=$ARCH $OS_VERSION rootdir $MIRROR
 else
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] [02] ❌ 错误: 不支持的构建工具: $BOOTSTRAP_TOOL"
     exit 1
