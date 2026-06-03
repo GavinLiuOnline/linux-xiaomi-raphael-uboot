@@ -13,7 +13,7 @@ system_config() {
   case "$1" in
     "debian-server")
       echo "DEBIAN_VERSION=${DEBIAN_VERSION:-trixie}"
-      echo "IMAGE_SIZE=3G"
+      echo "IMAGE_SIZE=5G"
       echo "IS_DESKTOP=false"
       echo "DESKTOP_ENV="
       ;;
@@ -31,7 +31,7 @@ system_config() {
       ;;
     "ubuntu-server")
       echo "UBUNTU_VERSION=${UBUNTU_VERSION:-resolute}"
-      echo "IMAGE_SIZE=3G"
+      echo "IMAGE_SIZE=5G"
       echo "IS_DESKTOP=false"
       echo "DESKTOP_ENV="
       ;;
